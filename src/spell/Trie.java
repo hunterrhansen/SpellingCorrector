@@ -10,7 +10,7 @@ public class Trie implements ITrie {
   public Trie() {
     root = new Node();
     wordCount = 0;
-    nodeCount = 0;
+    nodeCount = 1;
   }
 
   @Override
@@ -26,13 +26,13 @@ public class Trie implements ITrie {
 
       if (currNode.getChildren()[index] == null) {
         currNode.getChildren()[index] = new Node();
-        this.nodeCount++;
+        nodeCount++;
       }
-      wordIndex++;
-      addHelper(word, currNode.getChildren()[index], wordIndex);
+
+      addHelper(word, currNode.getChildren()[index], wordIndex + 1);
     } else {
       if (currNode.getValue() == 0) {
-        this.wordCount++;
+        wordCount++;
       }
       currNode.incrementValue();
     }
@@ -40,19 +40,36 @@ public class Trie implements ITrie {
 
   @Override
   public INode find(String word) {
-    return null;
+    word = word.toLowerCase();
+    return findHelper(word, root, 0);
   }
 
-  private INode findHelper(String word) { return new Node(); }
+  private INode findHelper(String word, INode currNode, int wordIndex) {
+    if (wordIndex < word.length()) {
+      char letter = word.charAt(wordIndex);
+      int index = letter - 'a';
+
+      if (currNode.getChildren()[index] == null) {
+        return null;
+      }
+
+      return findHelper(word, currNode.getChildren()[index], wordIndex + 1);
+    } else {
+      if (currNode.getValue() > 0) {
+        return currNode;
+      }
+      return null;
+    }
+  }
 
   @Override
   public int getWordCount() {
-    return 0;
+    return wordCount;
   }
 
   @Override
   public int getNodeCount() {
-    return 0;
+    return nodeCount;
   }
 
   @Override
@@ -60,7 +77,9 @@ public class Trie implements ITrie {
     int hashcode = wordCount * nodeCount;
 
     for (int i = 0; i < root.getChildren().length; i++) {
-      hashcode *= i;
+      if (root.getChildren()[i] != null) {
+        hashcode *= i;
+      }
     }
 
     return hashcode;

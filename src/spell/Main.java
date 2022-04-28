@@ -34,5 +34,7 @@ public class Main {
 		ITrie dictionary = new Trie();
 		dictionary.add("frog");
 		dictionary.add("fred");
+		System.out.println(dictionary.getWordCount());
+		System.out.println(dictionary.getNodeCount());
 	}
 }
