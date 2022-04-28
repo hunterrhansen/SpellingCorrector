@@ -1,5 +1,7 @@
 package spell;
 
+import java.util.Locale;
+
 public class Trie implements ITrie {
   private INode root;
   private int wordCount;
@@ -12,12 +14,36 @@ public class Trie implements ITrie {
   }
 
   @Override
-  public void add(String word) {}
+  public void add(String word) {
+    word = word.toLowerCase();
+    addHelper(word, root, 0);
+  }
+
+  private void addHelper(String word, INode currNode, int wordIndex) {
+    if (wordIndex < word.length()) {
+      char letter = word.charAt(wordIndex);
+      int index = letter - 'a';
+
+      if (currNode.getChildren()[index] == null) {
+        currNode.getChildren()[index] = new Node();
+        this.nodeCount++;
+      }
+      wordIndex++;
+      addHelper(word, currNode.getChildren()[index], wordIndex);
+    } else {
+      if (currNode.getValue() == 0) {
+        this.wordCount++;
+      }
+      currNode.incrementValue();
+    }
+  }
 
   @Override
   public INode find(String word) {
     return null;
   }
+
+  private INode findHelper(String word) { return new Node(); }
 
   @Override
   public int getWordCount() {
@@ -66,10 +92,14 @@ public class Trie implements ITrie {
     }
 
     for (int i = 0; i < 26; i++) {
-      if (n1.getChildren()[i] == null && n2.getChildren()[i] != null) {
-        return false;
-      } else if (n1.getChildren()[i] != null && n2.getChildren()[i] == null) {
-        return false;
+      if (n1.getChildren()[i] == null) {
+        if (n2.getChildren()[i] != null) {
+          return false;
+        }
+      } else {
+        if ((n2.getChildren()[i] == null)) {
+          return false;
+        }
       }
     }
 
@@ -78,6 +108,9 @@ public class Trie implements ITrie {
       INode child2 = n2.getChildren()[i];
       if (child1 != null) {
         boolean equal = equalsHelper(child1, child2);
+        if (!equal) {
+          return false;
+        }
       }
     }
 
