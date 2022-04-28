@@ -7,9 +7,5 @@
 	words.txt,b/5/b50c83fae7efacc180a53aea3fdd96a39dc2cfe2
 J
 src/passoff/SpellTest.java,b/1/b1ec35b6ffaad327f3e2241ef1596a70237f3f5d
-I
-src/passoff/TrieTest.java,5/d/5dcc3325d14b337119c5f3e8984bceb32f4423c1
 N
 src/spell/ISpellCorrector.java,8/5/850f60a9183ce9126dadc1b6892771fc0ca600ad
-D
-src/spell/INode.java,1/6/16c7394eee88f957b00b57f5d3e510f3cca96766

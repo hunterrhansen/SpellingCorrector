@@ -1,11 +1,15 @@
 package spell;
 
 public class Trie implements ITrie {
-  private Node root;
+  private INode root;
   private int wordCount;
   private int nodeCount;
 
-  public Trie() {}
+  public Trie() {
+    root = new Node();
+    wordCount = 0;
+    nodeCount = 0;
+  }
 
   @Override
   public void add(String word) {}
@@ -27,28 +31,56 @@ public class Trie implements ITrie {
 
   @Override
   public int hashCode() {
-    // combine the following values:
-    // 1. wordCount
-    // 2. nodeCount
-    // 3. the index of each of the root node's non-null children
-    return 0;
+    int hashcode = wordCount * nodeCount;
+
+    for (int i = 0; i < root.getChildren().length; i++) {
+      hashcode *= i;
+    }
+
+    return hashcode;
   }
 
   @Override
   public boolean equals(Object obj) {
-    // is obj == null?
-    // is obj == this?
-    // do this and obj have the same class?
-    Trie dictionary = (Trie)obj;
+    if (obj == null) {
+      return false;
+    }
+    if (obj == this) {
+      return true;
+    }
+    if (obj.getClass() != this.getClass()) {
+      return false;
+    }
 
-    return equals_Helper(this.root, dictionary.root);
+    Trie dictionary = (Trie)obj;
+    if (dictionary.getWordCount() != this.getWordCount() || dictionary.getNodeCount() != this.getNodeCount()) {
+      return false;
+    }
+
+    return equalsHelper(this.root, dictionary.root);
   }
 
-  private boolean equals_Helper(Node n1, Node n2) {
-    // compare n1 and n2 to see if they are the same
-      // do n1 and n2 have the same count?
-      // do they have non-null children in exactly the same indexes
-    // recurse on the children and compare the child subtrees
+  private boolean equalsHelper(INode n1, INode n2) {
+    if (n1.getValue() != n2.getValue()) {
+      return false;
+    }
+
+    for (int i = 0; i < 26; i++) {
+      if (n1.getChildren()[i] == null && n2.getChildren()[i] != null) {
+        return false;
+      } else if (n1.getChildren()[i] != null && n2.getChildren()[i] == null) {
+        return false;
+      }
+    }
+
+    for (int i = 0; i < 26; i++) {
+      INode child1 = n1.getChildren()[i];
+      INode child2 = n2.getChildren()[i];
+      if (child1 != null) {
+        boolean equal = equalsHelper(child1, child2);
+      }
+    }
+
     return true;
   }
 
@@ -62,7 +94,7 @@ public class Trie implements ITrie {
     return output.toString();
   }
 
-  private void toString_Helper(Node n, StringBuilder currWord, StringBuilder output) {
+  private void toString_Helper(INode n, StringBuilder currWord, StringBuilder output) {
 
     if (n.getValue() > 0) {
       output.append(currWord.toString());
@@ -74,7 +106,7 @@ public class Trie implements ITrie {
       if (child != null) {
         char childLetter = (char)('a' + i);
         currWord.append(childLetter);
-        toString_Helper((Node)child, currWord, output);
+        toString_Helper(child, currWord, output);
 
         currWord.deleteCharAt(currWord.length() - 1);
       }
