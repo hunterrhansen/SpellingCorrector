@@ -9,16 +9,18 @@ import java.util.TreeSet;
 
 public class SpellCorrector implements ISpellCorrector {
 
-  private ITrie dictionary;
-  private Set<String> editOneDistanceWords;
-  private Set<String> editTwoDistanceWords;
-  private Set<String> suggestionWords;
+  private final ITrie dictionary;
+  private final Set<String> editOneDistanceWords;
+  private final Set<String> editTwoDistanceWords;
+  private final TreeSet<String> suggestionWords;
+  private int highestFrequency;
 
   public SpellCorrector() {
     dictionary = new Trie();
     editOneDistanceWords = new HashSet<>();
     editTwoDistanceWords = new HashSet<>();
     suggestionWords = new TreeSet<>();
+    highestFrequency = 0;
   }
 
   @Override
@@ -38,61 +40,59 @@ public class SpellCorrector implements ISpellCorrector {
     inputWord = inputWord.toLowerCase();
 
     if (dictionary.find(inputWord) != null) {
+      clearSuggestions();
       return inputWord;
     }
 
     // edit distance 1
-    TreeSet<String> suggestions = new TreeSet<>();
-    int highestFrequency = 0;
-
-    highestFrequency = deletionDistance(inputWord, highestFrequency, editOneDistanceWords, suggestions);
-    highestFrequency = transpositionDistance(inputWord, highestFrequency, editOneDistanceWords, suggestions);
-    highestFrequency = alterationDistance(inputWord, highestFrequency, editOneDistanceWords, suggestions);
-    highestFrequency = insertionDistance(inputWord, highestFrequency, editOneDistanceWords, suggestions);
+    deletionDistance(inputWord, editOneDistanceWords);
+    transpositionDistance(inputWord, editOneDistanceWords);
+    alterationDistance(inputWord, editOneDistanceWords);
+    insertionDistance(inputWord, editOneDistanceWords);
 
     // edit distance 2
-    if (suggestions.isEmpty()) {
+    if (suggestionWords.isEmpty()) {
       for (String word : editOneDistanceWords) {
-        highestFrequency = deletionDistance(word, highestFrequency, editTwoDistanceWords, suggestions);
-        highestFrequency = transpositionDistance(word, highestFrequency, editTwoDistanceWords, suggestions);
-        highestFrequency = alterationDistance(word, highestFrequency, editTwoDistanceWords, suggestions);
-        highestFrequency = insertionDistance(word, highestFrequency, editTwoDistanceWords, suggestions);
+        deletionDistance(word, editTwoDistanceWords);
+        transpositionDistance(word, editTwoDistanceWords);
+        alterationDistance(word, editTwoDistanceWords);
+        insertionDistance(word, editTwoDistanceWords);
       }
     }
 
-    if (suggestions.isEmpty()) {
+    if (suggestionWords.isEmpty()) {
+      clearSuggestions();
       return null;
     } else {
-      return suggestions.first();
+      String word = suggestionWords.first();
+      clearSuggestions();
+      return word;
     }
   }
 
-  private int deletionDistance(String word, int highestFreqency, Set<String> editedWords, Set<String> suggestions) {
+  private void deletionDistance(String word, Set<String> editedWords) {
     for (int i = 0; i < word.length(); i++) {
       StringBuilder tmp = new StringBuilder(word);
-      String deletionEditWord = tmp.deleteCharAt(i).toString();
+      String deletionWord = tmp.deleteCharAt(i).toString();
 
-      editedWords.add(deletionEditWord);
-      highestFreqency = calcHighestFreq(highestFreqency, deletionEditWord, suggestions);
+      editedWords.add(deletionWord);
+      calcHighestFreq(deletionWord);
     }
-
-    return highestFreqency;
   }
 
-  private int transpositionDistance(String word, int highestFrequency, Set<String> editedWords, Set<String> suggestions) {
-    for (int i=0; i < word.length() - 1; i++) {
-      StringBuilder tmp=new StringBuilder(word);
-      StringBuilder transposedChars=new StringBuilder(word.substring(i, i + 2)).reverse();
+  private void transpositionDistance(String word, Set<String> editedWords) {
+    for (int i = 0; i < word.length() - 1; i++) {
+      StringBuilder tmp = new StringBuilder(word);
+      StringBuilder transposedChars = new StringBuilder(word.substring(i, i + 2)).reverse();
       tmp.replace(i, i + 2, transposedChars.toString());
-      String transposedWord=tmp.toString();
+      String transposedWord = tmp.toString();
 
       editedWords.add(transposedWord);
-      highestFrequency = calcHighestFreq(highestFrequency, transposedWord, suggestions);
+      calcHighestFreq(transposedWord);
     }
-    return highestFrequency;
   }
 
-  private int alterationDistance(String word, int highestFrequency, Set<String> editedWords, Set<String> suggestions) {
+  private void alterationDistance(String word, Set<String> editedWords) {
     for (int i = 0; i < word.length(); i++) {
       for (char letter = 'a'; letter <= 'z'; letter++) {
         if (letter != word.charAt(i)) {
@@ -101,41 +101,42 @@ public class SpellCorrector implements ISpellCorrector {
           String alteredWord = new String(tmp);
 
           editedWords.add(alteredWord);
-          highestFrequency = calcHighestFreq(highestFrequency, alteredWord, suggestions);
+          calcHighestFreq(alteredWord);
         }
 
       }
     }
-    return highestFrequency;
   }
 
-  private int insertionDistance(String word,  int highestFrequency, Set<String> editedWords, Set<String> suggestions) {
+  private void insertionDistance(String word, Set<String> editedWords) {
     for (int i = 0; i <= word.length(); i++) {
       for (char letter = 'a'; letter <= 'z'; letter++) {
         String insertedWord = word.substring(0, i) + letter + word.substring(i);
-
+        
         editedWords.add(insertedWord);
-        highestFrequency = calcHighestFreq(highestFrequency, insertedWord, suggestions);
+        calcHighestFreq(insertedWord);
       }
     }
-
-    return highestFrequency;
   }
 
-  private int calcHighestFreq(int highestFrequency, String word, Set<String> suggestions) {
+  private void clearSuggestions() {
+    suggestionWords.clear();
+    highestFrequency = 0;
+  }
+
+  private void calcHighestFreq(String word) {
     INode found = dictionary.find(word);
 
     if (found != null) {
       if (found.getValue() > highestFrequency) {
-        suggestions.clear();
+        suggestionWords.clear();
         highestFrequency = found.getValue();
-        suggestions.add(word);
+        suggestionWords.add(word);
       } else if (found.getValue() == highestFrequency) {
-        suggestions.add(word);
+        suggestionWords.add(word);
       }
     }
 
-    return highestFrequency;
   }
 
 }
