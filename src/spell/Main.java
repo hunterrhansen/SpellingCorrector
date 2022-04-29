@@ -17,9 +17,6 @@ public class Main {
 		String dictionaryFileName = args[0];
 		String inputWord = args[1];
 
-		//
-        //Create an instance of your corrector here
-        //
 		ISpellCorrector corrector = new SpellCorrector();
 
 		corrector.useDictionary(dictionaryFileName);
@@ -30,11 +27,4 @@ public class Main {
 
 		System.out.println("Suggestion is: " + suggestion);
 	}
-//	public static void main(String[] args) throws IOException {
-//		ITrie dictionary = new Trie();
-//		dictionary.add("frog");
-//		dictionary.add("fred");
-//		System.out.println(dictionary.getWordCount());
-//		System.out.println(dictionary.getNodeCount());
-//	}
 }
